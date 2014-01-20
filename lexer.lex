@@ -11,6 +11,5 @@
 [^ ]+"い"	{ yylval = strdup(yytext); return ADJ; }
 "日本"|"私"	{ yylval = strdup(yytext); return NOUN; }
 "の"		{ yylval = strdup(yytext); return NO; }
-"。"		{ yylval = "。"; return MARU; }
-[^ ]+		{ yylval = strdup(yytext); return NOUN; }
-
+"\n"		{ yylval = "\n"; return MARU; }
+[^ \n]+		{ yylval = strdup(yytext); return NOUN; }
