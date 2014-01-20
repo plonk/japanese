@@ -34,24 +34,24 @@ modifier  n  o  u  n - p h r a s e   ... (b)
 
 session:
 /* empty */
-	| session noun-phrase MARU { printf("発話:\n\t%s。\n", $2); }
+	| session noun-phrase MARU { printf("# 発話:\n\t%s\n", $2); }
 
 noun-phrase:
-        | NOUN			{ $$ = format("[NP:%s_noun]", $1); }
+        | NOUN			{ $$ = format("Noun['%s']", $1); }
         | modifier noun-phrase		%merge <mnpMerge> {
-                   $$ = format("[NP:%s%s]", $1, $2);
+                   $$ = format("NP[%s, %s]", $1, $2);
         }
 
 modifier:
-        noun-phrase NO 	{ $$ = format("(MOD:%sの)", $1); }
-	| ADJ		{ $$ = format("(MOD:%s_adj)", $1); }
+        noun-phrase NO 	{ $$ = format("Mod[%s, Particle['の']]", $1); }
+	| ADJ		{ $$ = format("Mod[Adj['%s']]", $1); }
 
 %%
 
 YYSTYPE
 mnpMerge(YYSTYPE x0, YYSTYPE x1)
 {
-  return format("{%s\n\tあるいは\n\t%s}", x0, x1);
+  return format("Alt[%s, %s]", x0, x1);
 }
 
 const char *format(const char * fmt, ...)
