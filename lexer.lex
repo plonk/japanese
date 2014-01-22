@@ -8,8 +8,13 @@
 
 [ \t]
 "美しい"	{ yylval = strdup(yytext); return ADJ; }
-[^ ]+"い"	{ yylval = strdup(yytext); return ADJ; }
+[^ \n]+"い"	{ yylval = strdup(yytext); return ADJ; }
 "日本"|"私"	{ yylval = strdup(yytext); return NOUN; }
 "の"		{ yylval = strdup(yytext); return NO; }
 "\n"		{ yylval = "\n"; return MARU; }
+"は"		{ yylval = strdup(yytext); return WA; }
+"が"		{ yylval = strdup(yytext); return GA; }
+"だ"		{ yylval = strdup(yytext); return DA; }
 [^ \n]+		{ yylval = strdup(yytext); return NOUN; }
+[^ \n]+"る"|"た"	{ yylval = strdup(yytext); return VERB; }
+

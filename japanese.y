@@ -4,14 +4,14 @@
  #include <stdarg.h>
  int yylex(void);
  void yyerror(char const *);
- const char *format(const char *, ...);
+ const char*format(const char *, ...);
  #define YYSTYPE char const *
  YYSTYPE mnpMerge(YYSTYPE x0, YYSTYPE x1);
 %}
 
 %define api.value.type {char const *}
 
-%token ADJ NOUN NO MARU
+%token ADJ NOUN GA WA WO NO VERB MARU DA
 
 %left NO
 
@@ -19,32 +19,26 @@
 
 %%
 
-/*
-美しい[日本の私]。
-[美しい日本]の私。
+session: %empty
+| session noun-phrase MARU { printf("# 発話:\n\t%s\n", $2); }
+| session sentence    MARU { printf("# 発話:\n\t%s\n", $2); }
 
-  ADJ        NOUN    NO     NOUN
-modifier noun-phrase NO noun-phrase
-modifier     modifier   noun-phrase  ... (a)
-   m o d i f i e r      noun-phrase  ... (a')
-modifier  n  o  u  n - p h r a s e   ... (b)
-  n  o  u  n  -  p  h  r  a  s  e    ... (c)
-*/
- 
+sentence: subject predicate 	{ $$ = format("Sentence[%s, %s]", $1, $2); }
 
-session:
-/* empty */
-	| session noun-phrase MARU { printf("# 発話:\n\t%s\n", $2); }
+predicate: VERB			{ $$ = format("Predicate[Verb['%s']]", $1); }
+| ADJ			{ $$ = format("Predicate[Adj['%s']]", $1); }
+| noun-phrase copula	{ $$ = format("Predicate[%s, %s]", $1, $2); }
 
-noun-phrase:
-        | NOUN			{ $$ = format("Noun['%s']", $1); }
-        | modifier noun-phrase		%merge <mnpMerge> {
-                   $$ = format("NP[%s, %s]", $1, $2);
-        }
+copula: DA		{ $$ = format("Copula['だ']"); }
 
-modifier:
-        noun-phrase NO 	{ $$ = format("Mod[%s, Particle['の']]", $1); }
-	| ADJ		{ $$ = format("Mod[Adj['%s']]", $1); }
+subject: noun-phrase WA	{ $$ = format("Subject[%s, Particle['は']]", $1); }
+| noun-phrase GA	{ $$ = format("Subject[%s, Particle['が']]", $1); }
+
+noun-phrase: NOUN			{ $$ = format("Noun['%s']", $1); } /* NP[Noun[]] ? */
+| modifier noun-phrase	%merge <mnpMerge> { $$ = format("NP[%s, %s]", $1, $2); }
+
+modifier: noun-phrase NO 	{ $$ = format("Mod[%s, Particle['の']]", $1); }
+| ADJ			{ $$ = format("Mod[Adj['%s']]", $1); }
 
 %%
 
@@ -64,20 +58,6 @@ const char *format(const char * fmt, ...)
     va_end(ap);
     return ret;
 }
-
-/*
-int yylex(void)
-{
-    static int pos = 0;
-    char *words[] = { "美しい", "日本", "の", "私", "。", NULL };
-    int token_type[] = { ADJ, NOUN, NO, NOUN, MARU,  0 };
-//    char *words[] = { "美しい", "私", NULL };
-//    int token_type[] = { ADJ, NOUN, 0 };
-
-    yylval = words[pos];
-    return token_type[pos++];
-}
-*/
 
 void yyerror(const char *msg) { printf("%s\n", msg); }
 
