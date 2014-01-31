@@ -2,9 +2,12 @@
  #include <stdio.h>
  #include <string.h>
  #include <stdarg.h>
+
+ extern int yy_flex_debug;
+
  int yylex(void);
  void yyerror(char const *);
- const char*format(const char *, ...);
+ const char *format(const char *, ...);
  #define YYSTYPE char const *
  YYSTYPE mnpMerge(YYSTYPE x0, YYSTYPE x1);
 %}
@@ -28,7 +31,7 @@ sentence: clause { $$ = format("Sentence[%s]", $1); }
 
 clause: nominative predicate 	{ $$ = format("Clause[%s, %s]", $1, $2); }
 
-predicate: VERB			{ $$ = format("Predicate[Verb['%s']]", $1); }
+predicate: VERB			{ $$ = format("Pred[Verb['%s']]", $1); }
 | adjective-phrase		{ $$ = format("Pred[%s]", $1); }
 | noun-phrase copula	{ $$ = format("Pred[%s, %s]", $1, $2); }
 | predicate KA predicate	{ $$ = format("Pred[Or[%s, %s]]", $1, $3); }
@@ -57,7 +60,7 @@ adjective: ADJ			{ $$ = format("Adj['%s']", $1); }
 YYSTYPE
 mnpMerge(YYSTYPE x0, YYSTYPE x1)
 {
-  return format("Alt[%s, %s]", x0, x1);
+    return format("Alt[%s, %s]", x0, x1);
 }
 
 const char *format(const char * fmt, ...)
@@ -77,7 +80,39 @@ const char *format(const char * fmt, ...)
 
 void yyerror(const char *msg) { printf("%s\n", msg); }
 
-int main()
+void usage_exit()
 {
+    fprintf(stderr, "Usage: sa [ -l ]\n"
+                    "\t-l   print each lexeme\n");
+    exit(1);
+}
+#include <unistd.h>
+
+int main(int argc, char *argv[])
+{
+    int opt;
+
+    // グローバル変数の初期設定
+    yy_flex_debug = 0;
+
+    // スイッチの解析
+    while ((opt = getopt(argc, argv, "l")) != -1) {
+        switch (opt) {
+        case 'l':
+            yy_flex_debug = 1;
+            break;
+        default:
+            fprintf(stderr, "Unknown option `%c'\n", opt);
+            usage_exit();
+            break;
+        }
+    }
+
+    if (optind > argc) {
+        usage_exit();
+    }
+
     yyparse();
+
+    return 0;
 }
