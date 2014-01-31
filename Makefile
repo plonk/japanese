@@ -9,11 +9,11 @@ clean:
 sa: lexer.o japanese.tab.o
 	$(CC) -o $@ $(LDFLAGS) $^
 
-.o.c:
-	$(CC) -o $@ $^
+.c.o:
+	$(CC) -Wall -c -o $@ $^
 
-lexer.c: lexer.lex
-	$(LEX) -8 -o lexer.c lexer.lex
+lexer.c: lexer.lex japanese.tab.c
+	$(LEX) -d -8 -o lexer.c lexer.lex
 
 japanese.tab.c: japanese.y
-	$(YACC) -d $^
+	$(YACC) -t -d $^
