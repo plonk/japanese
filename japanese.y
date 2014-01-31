@@ -46,7 +46,7 @@ noun-phrase: NOUN			{ $$ = format("Noun['%s']", $1); } /* NP[Noun[]] ? */
 | adjective noun-phrase	%merge <mnpMerge> { $$ = format("NP[%s, %s]", $2, $1); }
 | genitive noun-phrase	%merge <mnpMerge> { $$ = format("NP[%s, %s]", $2, $1); }
 | relative noun-phrase	%merge <mnpMerge> { $$ = format("NP[%s, %s]", $2, $1); }
-| noun-phrase KA noun-phrase	{ $$ = format("NP[Or[%s, %s]]", $1, $3); }
+| noun-phrase KA noun-phrase %merge <mnpMerge>	{ $$ = format("NP[Or[%s, %s]]", $1, $3); }
 
 relative: clause
 
@@ -112,7 +112,8 @@ int main(int argc, char *argv[])
         usage_exit();
     }
 
-    yyparse();
-
-    return 0;
+    // 0 SUCCESS
+    // 1 PARSE ERROR
+    // 2 MEMORY EXHAUSTION ERROR
+    return yyparse();
 }
